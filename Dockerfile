@@ -19,6 +19,8 @@ ENV GOEXPERIMENT=greenteagc
 WORKDIR /build
 
 ADD go.mod go.sum ./
+# 使用七牛云维护的 goproxy.cn，也可以换成其他如 goproxy.io
+ENV GOPROXY=https://goproxy.cn,direct
 RUN go mod download
 
 COPY . .
