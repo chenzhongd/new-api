@@ -78,9 +78,52 @@ func GetTopUpInfo(c *gin.Context) {
 		}
 	}
 
+	enableEpay := operation_setting.PayAddress != "" && operation_setting.EpayId != "" && operation_setting.EpayKey != ""
+	enableXunhuPay := operation_setting.XunhuPayAppId != "" && operation_setting.XunhuPayAppSecret != "" && operation_setting.XunhuPayGateway != ""
+
+	// 仅启用虎皮椒支付时，根据 XunhuPayMethod 控制显示哪个支付按钮
+	if enableXunhuPay && !enableEpay {
+		xunhuMethod := operation_setting.XunhuPayMethod
+		if xunhuMethod == "alipay" || xunhuMethod == "wxpay" {
+			filtered := make([]map[string]string, 0)
+			found := false
+			for _, m := range payMethods {
+				t := m["type"]
+				if t == "alipay" || t == "wxpay" {
+					if t == xunhuMethod {
+						filtered = append(filtered, m)
+						found = true
+					}
+				} else {
+					// 保留非微信/支付宝的方式（如自定义）
+					filtered = append(filtered, m)
+				}
+			}
+			// PayMethods 中若没有配置对应方式，则补充默认项
+			if !found {
+				var defaultMethod map[string]string
+				if xunhuMethod == "alipay" {
+					defaultMethod = map[string]string{
+						"name":  "支付宝",
+						"type":  "alipay",
+						"color": "rgba(var(--semi-blue-5), 1)",
+					}
+				} else {
+					defaultMethod = map[string]string{
+						"name":  "微信",
+						"type":  "wxpay",
+						"color": "rgba(var(--semi-green-5), 1)",
+					}
+				}
+				filtered = append([]map[string]string{defaultMethod}, filtered...)
+			}
+			payMethods = filtered
+		}
+	}
+
 	data := gin.H{
-		"enable_online_topup":   operation_setting.PayAddress != "" && operation_setting.EpayId != "" && operation_setting.EpayKey != "",
-		"enable_xunhupay_topup": operation_setting.XunhuPayAppId != "" && operation_setting.XunhuPayAppSecret != "" && operation_setting.XunhuPayGateway != "",
+		"enable_online_topup":   enableEpay || enableXunhuPay,
+		"enable_xunhupay_topup": enableXunhuPay,
 		"enable_stripe_topup":   setting.StripeApiSecret != "" && setting.StripeWebhookSecret != "" && setting.StripePriceId != "",
 		"enable_creem_topup":    setting.CreemApiKey != "" && setting.CreemProducts != "[]",
 		"enable_waffo_topup":    enableWaffo,

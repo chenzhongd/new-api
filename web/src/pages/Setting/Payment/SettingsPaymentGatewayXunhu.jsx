@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { useEffect, useState, useRef } from 'react';
-import { Banner, Button, Form, Row, Col, Typography, Spin } from '@douyinfe/semi-ui';
+import { Banner, Button, Form, Row, Col, Typography, Spin, Select } from '@douyinfe/semi-ui';
 const { Text } = Typography;
 import { API, removeTrailingSlash, showError, showSuccess } from '../../../helpers';
 import { useTranslation } from 'react-i18next';
@@ -30,6 +30,7 @@ export default function SettingsPaymentGatewayXunhu(props) {
     XunhuPayAppId: '',
     XunhuPayAppSecret: '',
     XunhuPayGateway: '',
+    XunhuPayMethod: 'both',
   });
   const [originInputs, setOriginInputs] = useState({});
   const formApiRef = useRef(null);
@@ -40,6 +41,7 @@ export default function SettingsPaymentGatewayXunhu(props) {
         XunhuPayAppId: props.options.XunhuPayAppId || '',
         XunhuPayAppSecret: props.options.XunhuPayAppSecret || '',
         XunhuPayGateway: props.options.XunhuPayGateway || '',
+        XunhuPayMethod: props.options.XunhuPayMethod || 'both',
       };
       setInputs(currentInputs);
       setOriginInputs({ ...currentInputs });
@@ -73,6 +75,8 @@ export default function SettingsPaymentGatewayXunhu(props) {
           value: removeTrailingSlash(inputs.XunhuPayGateway),
         });
       }
+      // 支付方式选择始终保存
+      options.push({ key: 'XunhuPayMethod', value: inputs.XunhuPayMethod || 'both' });
 
       if (options.length === 0) {
         showError(t('没有需要更新的内容'));
@@ -156,6 +160,25 @@ export default function SettingsPaymentGatewayXunhu(props) {
                 label={t('虎皮椒网关地址')}
                 placeholder={t('例如：https://api.xunhupay.com')}
               />
+            </Col>
+          </Row>
+          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }} style={{ marginTop: 12 }}>
+            <Col xs={24} sm={24} md={12} lg={8} xl={8}>
+              <Form.Slot label={t('展示给用户的支付方式')}>
+                <Select
+                  value={inputs.XunhuPayMethod || 'both'}
+                  onChange={(val) => {
+                    setInputs({ ...inputs, XunhuPayMethod: val });
+                    formApiRef.current?.setValue('XunhuPayMethod', val);
+                  }}
+                  style={{ width: '100%' }}
+                  optionList={[
+                    { value: 'both',   label: t('微信 + 支付宝（两者都显示）') },
+                    { value: 'wxpay',  label: t('仅微信') },
+                    { value: 'alipay', label: t('仅支付宝') },
+                  ]}
+                />
+              </Form.Slot>
             </Col>
           </Row>
           <Button onClick={submitXunhuPaySetting} style={{ marginTop: 8 }}>

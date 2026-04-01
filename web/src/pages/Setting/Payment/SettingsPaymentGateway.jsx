@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { useEffect, useState, useRef } from 'react';
-import { Button, Form, Row, Col, Typography, Spin } from '@douyinfe/semi-ui';
+import { Banner, Button, Form, Row, Col, Typography, Spin, Select } from '@douyinfe/semi-ui';
 const { Text } = Typography;
 import {
   API,
@@ -43,6 +43,10 @@ export default function SettingsPaymentGateway(props) {
     PayMethods: '',
     AmountOptions: '',
     AmountDiscount: '',
+    XunhuPayAppId: '',
+    XunhuPayAppSecret: '',
+    XunhuPayGateway: '',
+    XunhuPayMethod: 'both',
   });
   const [originInputs, setOriginInputs] = useState({});
   const formApiRef = useRef(null);
@@ -66,6 +70,10 @@ export default function SettingsPaymentGateway(props) {
         PayMethods: props.options.PayMethods || '',
         AmountOptions: props.options.AmountOptions || '',
         AmountDiscount: props.options.AmountDiscount || '',
+        XunhuPayAppId: props.options.XunhuPayAppId || '',
+        XunhuPayAppSecret: props.options.XunhuPayAppSecret || '',
+        XunhuPayGateway: props.options.XunhuPayGateway || '',
+        XunhuPayMethod: props.options.XunhuPayMethod || 'both',
       };
 
       // 美化 JSON 展示
@@ -180,6 +188,20 @@ export default function SettingsPaymentGateway(props) {
           value: inputs.AmountDiscount,
         });
       }
+      if (inputs.XunhuPayAppId !== '') {
+        options.push({ key: 'XunhuPayAppId', value: inputs.XunhuPayAppId });
+      }
+      if (inputs.XunhuPayAppSecret !== '') {
+        options.push({ key: 'XunhuPayAppSecret', value: inputs.XunhuPayAppSecret });
+      }
+      if (inputs.XunhuPayGateway !== '') {
+        options.push({
+          key: 'XunhuPayGateway',
+          value: removeTrailingSlash(inputs.XunhuPayGateway),
+        });
+      }
+      // 支付方式选择始终保存
+      options.push({ key: 'XunhuPayMethod', value: inputs.XunhuPayMethod || 'both' });
 
       // 发送请求
       const requestQueue = options.map((opt) =>
@@ -219,7 +241,7 @@ export default function SettingsPaymentGateway(props) {
         <Form.Section text={t('支付设置')}>
           <Text>
             {t(
-              '（当前仅支持易支付接口，默认使用上方服务器地址作为回调地址！）',
+              '（支持易支付和虎皮椒接口，默认使用上方服务器地址作为回调地址！）',
             )}
           </Text>
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}>
@@ -325,6 +347,80 @@ export default function SettingsPaymentGateway(props) {
           </Row>
 
           <Button onClick={submitPayAddress}>{t('更新支付设置')}</Button>
+        </Form.Section>
+
+        <Form.Section text={t('虎皮椒支付设置')}>         
+          <Text>
+            {t('虎皮椒（xunhupay）个人微信/支付宝收款接口。请前往')}
+            <a
+              href='https://admin.xunhupay.com'
+              target='_blank'
+              rel='noreferrer'
+            >
+              {t('虎皮椒商户后台')}
+            </a>
+            {t('获取 AppID 和 AppSecret。')}
+          </Text>
+          <Banner
+            type='info'
+            style={{ marginTop: 12, marginBottom: 4 }}
+            description={`异步回调地址（notify_url）：${
+              inputs.CustomCallbackAddress ||
+              (inputs.PayAddress
+                ? removeTrailingSlash(inputs.PayAddress)
+                : t('网站地址'))
+            }/api/user/xunhupay/notify`}
+          />
+          <Banner
+            type='warning'
+            style={{ marginBottom: 12 }}
+            description={t(
+              '填写了虎皮椒配置后，充值页面的微信/支付宝支付按钮将通过虎皮椒渠道拉起收款，易支付配置可留空。',
+            )}
+          />
+          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}>
+            <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+              <Form.Input
+                field='XunhuPayAppId'
+                label={t('虎皮椒 AppID')}
+                placeholder={t('例如：20146122002')}
+              />
+            </Col>
+            <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+              <Form.Input
+                field='XunhuPayAppSecret'
+                label={t('虎皮椒 AppSecret')}
+                placeholder={t('敏感信息不会发送到前端显示')}
+                type='password'
+              />
+            </Col>
+            <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+              <Form.Input
+                field='XunhuPayGateway'
+                label={t('虎皮椒网关地址')}
+                placeholder={t('例如：https://api.xunhupay.com')}
+              />
+            </Col>
+          </Row>
+          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }} style={{ marginTop: 12 }}>
+            <Col xs={24} sm={24} md={12} lg={8} xl={8}>
+              <Form.Slot label={t('展示给用户的支付方式')}>
+                <Select
+                  value={inputs.XunhuPayMethod || 'both'}
+                  onChange={(val) => {
+                    setInputs({ ...inputs, XunhuPayMethod: val });
+                    formApiRef.current?.setValue('XunhuPayMethod', val);
+                  }}
+                  style={{ width: '100%' }}
+                  optionList={[
+                    { value: 'both',   label: t('微信 + 支付宝（两者都显示）') },
+                    { value: 'wxpay',  label: t('仅微信') },
+                    { value: 'alipay', label: t('仅支付宝') },
+                  ]}
+                />
+              </Form.Slot>
+            </Col>
+          </Row>
         </Form.Section>
       </Form>
     </Spin>
