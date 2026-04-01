@@ -9,9 +9,10 @@ set -e
 
 # ============= 修改这里 =============
 DOCKER_IMAGE="chenzhong996/new-api:latest"
-SERVER_USER="root"             # 服务器 SSH 用户名
+SERVER_USER="ubuntu"           # 服务器 SSH 用户名
 SERVER_HOST=""                 # 服务器公网 IP，例如：1.2.3.4
 SERVER_DIR="/opt/new-api"      # 服务器上 docker-compose.yml 所在目录
+ROOT_PASS=""                   # root 密码（用于 su 切换）
 # ====================================
 
 # 颜色输出
@@ -26,6 +27,7 @@ err()  { echo -e "${RED}❌ $1${NC}"; exit 1; }
 
 # 检查必填配置
 [ -z "$SERVER_HOST" ] && err "请先在 deploy.sh 中填写 SERVER_HOST（服务器 IP）"
+[ -z "$ROOT_PASS" ]   && err "请先在 deploy.sh 中填写 ROOT_PASS（root 密码）"
 
 # ---- Step 1: 编译前端 ----
 info "[1/3] 编译前端..."
@@ -48,10 +50,12 @@ log "镜像推送完成: $DOCKER_IMAGE"
 info "[3/3] 更新服务器容器..."
 ssh "$SERVER_USER@$SERVER_HOST" bash <<EOF
   set -e
-  cd "$SERVER_DIR"
-  docker compose pull
-  docker compose up -d
-  echo "容器状态："
-  docker compose ps
+  echo "$ROOT_PASS" | su -c "
+    cd '$SERVER_DIR' && \
+    docker compose pull && \
+    docker compose up -d && \
+    echo '容器状态：' && \
+    docker compose ps
+  " root
 EOF
 log "部署完成！访问 https://aitechlab.com.cn 查看效果"
