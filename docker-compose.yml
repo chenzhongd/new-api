@@ -18,13 +18,13 @@ services:
   new-api:
     # ✅ 方案A: 使用你自己推送到 Docker Hub 的镜像（本机 buildx 构建后 push）
     # 把 yourname 替换为你的 Docker Hub 用户名
-    # image: chenzhong996/new-api:latest
+    image: chenzhong996/new-api:latest
     # -------------------------------------------------------
     # ✅ 方案B: 在服务器上直接用本地代码构建（取消下面注释，注释掉上面 image）
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: new-api:local
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
+    # image: new-api:local
     container_name: new-api
     restart: always
     command: --log-dir /app/logs
