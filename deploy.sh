@@ -7,12 +7,18 @@
 # =============================================================
 set -e
 
+# 确保 bun 在 PATH 中
+export PATH="$HOME/.bun/bin:$PATH"
+
 # ============= 修改这里 =============
-DOCKER_IMAGE="chenzhong996/new-api:latest"
+# 镜像仓库与 Tag（可通过第一个参数覆盖：./deploy.sh my-tag）
+DOCKER_REPO="chenzhong996/new-api"
+IMAGE_TAG="1.0.0"
+DOCKER_IMAGE="$DOCKER_REPO:$IMAGE_TAG"
 SERVER_USER="ubuntu"           # 服务器 SSH 用户名
-SERVER_HOST=""                 # 服务器公网 IP，例如：1.2.3.4
-SERVER_DIR="/opt/new-api"      # 服务器上 docker-compose.yml 所在目录
-ROOT_PASS=""                   # root 密码（用于 su 切换）
+SERVER_HOST="43.160.235.85"                 # 服务器公网 IP，例如：1.2.3.4
+SERVER_DIR="~/new-api"      # 服务器上 docker-compose.yml 所在目录
+ROOT_PASS="AI_riskfeite0980"                   # root 密码（用于 su 切换）
 # ====================================
 
 # 颜色输出
@@ -32,6 +38,7 @@ err()  { echo -e "${RED}❌ $1${NC}"; exit 1; }
 # ---- Step 1: 编译前端 ----
 info "[1/3] 编译前端..."
 cd "$(dirname "$0")/web"
+bun install
 bun run build
 cd ..
 log "前端编译完成"
