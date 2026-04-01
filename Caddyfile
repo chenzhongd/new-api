@@ -1,0 +1,13 @@
+aitechlab.com.cn {
+	reverse_proxy new-api:3000
+
+	# 启用 gzip 压缩
+	encode gzip
+
+	# 安全 headers
+	header {
+		X-Content-Type-Options nosniff
+		X-Frame-Options SAMEORIGIN
+		Referrer-Policy strict-origin-when-cross-origin
+	}
+}
