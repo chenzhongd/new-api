@@ -212,7 +212,10 @@ const TopUp = () => {
           amount: parseInt(topUpCount),
           payment_method: 'stripe',
         });
-      } else if (enableXunhupayTopUp && (payWay === 'alipay' || payWay === 'wxpay')) {
+      } else if (
+        enableXunhupayTopUp &&
+        (payWay === 'alipay' || payWay === 'wxpay')
+      ) {
         // 虎皮椒支付 — 直接跳转 URL
         res = await API.post('/api/user/xunhupay/pay', {
           amount: parseInt(topUpCount),
@@ -231,7 +234,10 @@ const TopUp = () => {
         if (message === 'success') {
           if (payWay === 'stripe') {
             window.open(data.pay_link, '_blank');
-          } else if (res.config?.url?.includes('xunhupay') || (enableXunhupayTopUp && res.data.url && !res.data.data)) {
+          } else if (
+            res.config?.url?.includes('xunhupay') ||
+            (enableXunhupayTopUp && res.data.url && !res.data.data)
+          ) {
             // 虎皮椒返回直接跳转链接
             const isSafari =
               navigator.userAgent.indexOf('Safari') > -1 &&
@@ -326,32 +332,32 @@ const TopUp = () => {
 
   const waffoTopUp = async (payMethodIndex) => {
     try {
-        if (topUpCount < waffoMinTopUp) {
-            showError(t('充值数量不能小于') + waffoMinTopUp);
-            return;
-        }
-        setPaymentLoading(true);
-        const requestBody = {
-            amount: parseInt(topUpCount),
-        };
-        if (payMethodIndex != null) {
-            requestBody.pay_method_index = payMethodIndex;
-        }
-        const res = await API.post('/api/user/waffo/pay', requestBody);
-        if (res !== undefined) {
-            const { message, data } = res.data;
-            if (message === 'success' && data?.payment_url) {
-                window.open(data.payment_url, '_blank');
-            } else {
-                showError(data || t('支付请求失败'));
-            }
+      if (topUpCount < waffoMinTopUp) {
+        showError(t('充值数量不能小于') + waffoMinTopUp);
+        return;
+      }
+      setPaymentLoading(true);
+      const requestBody = {
+        amount: parseInt(topUpCount),
+      };
+      if (payMethodIndex != null) {
+        requestBody.pay_method_index = payMethodIndex;
+      }
+      const res = await API.post('/api/user/waffo/pay', requestBody);
+      if (res !== undefined) {
+        const { message, data } = res.data;
+        if (message === 'success' && data?.payment_url) {
+          window.open(data.payment_url, '_blank');
         } else {
-            showError(res);
+          showError(data || t('支付请求失败'));
         }
+      } else {
+        showError(res);
+      }
     } catch (e) {
-        showError(t('支付请求失败'));
+      showError(t('支付请求失败'));
     } finally {
-        setPaymentLoading(false);
+      setPaymentLoading(false);
     }
   };
 
@@ -491,13 +497,14 @@ const TopUp = () => {
           const enableXunhupayTopUp = data.enable_xunhupay_topup || false;
           const enableStripeTopUp = data.enable_stripe_topup || false;
           const enableCreemTopUp = data.enable_creem_topup || false;
-          const minTopUpValue = enableOnlineTopUp || enableXunhupayTopUp
-            ? data.min_topup
-            : enableStripeTopUp
-              ? data.stripe_min_topup
-              : data.enable_waffo_topup
-                ? data.waffo_min_topup
-                : 1;
+          const minTopUpValue =
+            enableOnlineTopUp || enableXunhupayTopUp
+              ? data.min_topup
+              : enableStripeTopUp
+                ? data.stripe_min_topup
+                : data.enable_waffo_topup
+                  ? data.waffo_min_topup
+                  : 1;
           setEnableOnlineTopUp(enableOnlineTopUp);
           setEnableXunhupayTopUp(enableXunhupayTopUp);
           setEnableStripeTopUp(enableStripeTopUp);
@@ -795,6 +802,7 @@ const TopUp = () => {
         <RechargeCard
           t={t}
           enableOnlineTopUp={enableOnlineTopUp}
+          enableXunhupayTopUp={enableXunhupayTopUp}
           enableStripeTopUp={enableStripeTopUp}
           enableCreemTopUp={enableCreemTopUp}
           creemProducts={creemProducts}

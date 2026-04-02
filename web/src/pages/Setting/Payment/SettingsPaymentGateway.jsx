@@ -18,7 +18,15 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { useEffect, useState, useRef } from 'react';
-import { Banner, Button, Form, Row, Col, Typography, Spin, Select } from '@douyinfe/semi-ui';
+import {
+  Banner,
+  Button,
+  Form,
+  Row,
+  Col,
+  Typography,
+  Spin,
+} from '@douyinfe/semi-ui';
 const { Text } = Typography;
 import {
   API,
@@ -40,13 +48,11 @@ export default function SettingsPaymentGateway(props) {
     MinTopUp: 1,
     TopupGroupRatio: '',
     CustomCallbackAddress: '',
-    PayMethods: '',
     AmountOptions: '',
     AmountDiscount: '',
     XunhuPayAppId: '',
     XunhuPayAppSecret: '',
     XunhuPayGateway: '',
-    XunhuPayMethod: 'both',
   });
   const [originInputs, setOriginInputs] = useState({});
   const formApiRef = useRef(null);
@@ -67,13 +73,11 @@ export default function SettingsPaymentGateway(props) {
             : 1,
         TopupGroupRatio: props.options.TopupGroupRatio || '',
         CustomCallbackAddress: props.options.CustomCallbackAddress || '',
-        PayMethods: props.options.PayMethods || '',
         AmountOptions: props.options.AmountOptions || '',
         AmountDiscount: props.options.AmountDiscount || '',
         XunhuPayAppId: props.options.XunhuPayAppId || '',
         XunhuPayAppSecret: props.options.XunhuPayAppSecret || '',
         XunhuPayGateway: props.options.XunhuPayGateway || '',
-        XunhuPayMethod: props.options.XunhuPayMethod || 'both',
       };
 
       // 美化 JSON 展示
@@ -115,13 +119,6 @@ export default function SettingsPaymentGateway(props) {
     if (originInputs['TopupGroupRatio'] !== inputs.TopupGroupRatio) {
       if (!verifyJSON(inputs.TopupGroupRatio)) {
         showError(t('充值分组倍率不是合法的 JSON 字符串'));
-        return;
-      }
-    }
-
-    if (originInputs['PayMethods'] !== inputs.PayMethods) {
-      if (!verifyJSON(inputs.PayMethods)) {
-        showError(t('充值方式设置不是合法的 JSON 字符串'));
         return;
       }
     }
@@ -173,9 +170,6 @@ export default function SettingsPaymentGateway(props) {
       if (originInputs['TopupGroupRatio'] !== inputs.TopupGroupRatio) {
         options.push({ key: 'TopupGroupRatio', value: inputs.TopupGroupRatio });
       }
-      if (originInputs['PayMethods'] !== inputs.PayMethods) {
-        options.push({ key: 'PayMethods', value: inputs.PayMethods });
-      }
       if (originInputs['AmountOptions'] !== inputs.AmountOptions) {
         options.push({
           key: 'payment_setting.amount_options',
@@ -192,7 +186,10 @@ export default function SettingsPaymentGateway(props) {
         options.push({ key: 'XunhuPayAppId', value: inputs.XunhuPayAppId });
       }
       if (inputs.XunhuPayAppSecret !== '') {
-        options.push({ key: 'XunhuPayAppSecret', value: inputs.XunhuPayAppSecret });
+        options.push({
+          key: 'XunhuPayAppSecret',
+          value: inputs.XunhuPayAppSecret,
+        });
       }
       if (inputs.XunhuPayGateway !== '') {
         options.push({
@@ -200,8 +197,6 @@ export default function SettingsPaymentGateway(props) {
           value: removeTrailingSlash(inputs.XunhuPayGateway),
         });
       }
-      // 支付方式选择始终保存
-      options.push({ key: 'XunhuPayMethod', value: inputs.XunhuPayMethod || 'both' });
 
       // 发送请求
       const requestQueue = options.map((opt) =>
@@ -301,13 +296,6 @@ export default function SettingsPaymentGateway(props) {
             placeholder={t('为一个 JSON 文本，键为组名称，值为倍率')}
             autosize
           />
-          <Form.TextArea
-            field='PayMethods'
-            label={t('充值方式设置')}
-            placeholder={t('为一个 JSON 文本')}
-            autosize
-          />
-
           <Row
             gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}
             style={{ marginTop: 16 }}
@@ -346,11 +334,7 @@ export default function SettingsPaymentGateway(props) {
             </Col>
           </Row>
 
-          <Button onClick={submitPayAddress}>{t('更新支付设置')}</Button>
-        </Form.Section>
-
-        <Form.Section text={t('虎皮椒支付设置')}>         
-          <Text>
+          <Text style={{ marginTop: 16, display: 'block' }}>
             {t('虎皮椒（xunhupay）个人微信/支付宝收款接口。请前往')}
             <a
               href='https://admin.xunhupay.com'
@@ -371,14 +355,10 @@ export default function SettingsPaymentGateway(props) {
                 : t('网站地址'))
             }/api/user/xunhupay/notify`}
           />
-          <Banner
-            type='warning'
-            style={{ marginBottom: 12 }}
-            description={t(
-              '填写了虎皮椒配置后，充值页面的微信/支付宝支付按钮将通过虎皮椒渠道拉起收款，易支付配置可留空。',
-            )}
-          />
-          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}>
+          <Row
+            gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}
+            style={{ marginTop: 12 }}
+          >
             <Col xs={24} sm={24} md={8} lg={8} xl={8}>
               <Form.Input
                 field='XunhuPayAppId'
@@ -402,25 +382,10 @@ export default function SettingsPaymentGateway(props) {
               />
             </Col>
           </Row>
-          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }} style={{ marginTop: 12 }}>
-            <Col xs={24} sm={24} md={12} lg={8} xl={8}>
-              <Form.Slot label={t('展示给用户的支付方式')}>
-                <Select
-                  value={inputs.XunhuPayMethod || 'both'}
-                  onChange={(val) => {
-                    setInputs({ ...inputs, XunhuPayMethod: val });
-                    formApiRef.current?.setValue('XunhuPayMethod', val);
-                  }}
-                  style={{ width: '100%' }}
-                  optionList={[
-                    { value: 'both',   label: t('微信 + 支付宝（两者都显示）') },
-                    { value: 'wxpay',  label: t('仅微信') },
-                    { value: 'alipay', label: t('仅支付宝') },
-                  ]}
-                />
-              </Form.Slot>
-            </Col>
-          </Row>
+
+          <Button onClick={submitPayAddress} style={{ marginTop: 16 }}>
+            {t('更新支付设置')}
+          </Button>
         </Form.Section>
       </Form>
     </Spin>
