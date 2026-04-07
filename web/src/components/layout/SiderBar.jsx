@@ -204,13 +204,13 @@ const SiderBar = ({ onNavigate = () => {} }) => {
     const items = [
       {
         text: t('操练场'),
-        itemKey: 'playground',
-        to: '/playground',
+        itemKey: 'chat',
+        items: chatItems,
       },
       {
         text: t('聊天'),
-        itemKey: 'chat',
-        items: chatItems,
+        itemKey: 'playground',
+        to: '/playground',
       },
     ];
 
